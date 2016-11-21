@@ -15,13 +15,15 @@ export default class SliderData {
     cacheData (id) {
         if (!this.cached) {
             const listEl        = 'li#slider-list-' + id;
-            this.filler         = document.querySelector(listEl + ' div.filler');
+            this.fillerEl         = document.querySelector(listEl + ' div.filler');
             this.handleEl       = document.querySelector(listEl + ' div.handle');
             this.facadeEl       = document.querySelector(listEl + ' div.facade');
             this.statTitleEl    = document.querySelector(listEl + ' h3');
             this.statUnitEl     = document.querySelector(listEl + ' p');
             this.cached         = true;
             console.log(this);
+        } else {
+            console.log('aready cached it before');
         }
     }
 

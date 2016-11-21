@@ -2,16 +2,19 @@ import { default as Template }      from './template';
 import { default as SliderData }    from './sliderdata.js';
 
 
+
 class AmbientSliders {
 
     constructor (config) {
 
-        this.target;
+        this.currentTarget      = {};
         this.tmpl               = '';
         this.config             = config;
         this.uId                = -1;
         this.sliders            = [];
         this.parentEl           = config.parentEl;
+        this.sliderOffset;
+        this.sliderWidth;
 
         this.handleTouchStart   = this.handleTouchStart.bind(this);
         this.handleTouchMove    = this.handleTouchMove.bind(this);
@@ -21,7 +24,8 @@ class AmbientSliders {
 
 
 
-    // invokes initialization actions
+    // invokes initialization actions, event listeners are
+    // attached individually as they have very specific actions
     init (preset) {
         this.buildSliders();
         this.renderInit();
@@ -58,42 +62,51 @@ class AmbientSliders {
 
 
 
-    // // dispatches actions based on touch events
-    // handleTouch (ev) {
-    //     const target = this.isValidTarget(ev);
-    //
-    //     if (target) {
-    //         if (ev.type === 'touchstart') {
-    //             this.handleTouchStart(ev);
-    //         }
-    //         else if (ev.type === 'touchmove') {
-    //             this.handleTouchMove(ev);
-    //         }
-    //         else if (ev.type === 'touchend') {
-    //             this.handleTouchEnd(ev);
-    //         }
-    //     }
-    // }
 
-
+    // caches SliderData instance elements and
+    // caches actual target info to state
     handleTouchStart (ev) {
-        this.target = this.isValidTarget(ev);
-        if (this.target) {
-            const id = this.target.dataset.id;
+        const elem = this.isValidTarget(ev);
+        if (elem) {
+            const id = elem.dataset.id;
             this.sliders[id].cacheData(id);
+            this.currentTarget.elem = elem;
+            this.currentTarget.id = id;
+            this.currentTarget.sliderData = this.sliders[id];
+            this.sliderOffset = elem.offsetLeft;
+            this.sliderWidth = elem.offsetWidth;
         }
     }
 
 
 
-
+    // handles the dispatching of render events
+    // for each move iteration
     handleTouchMove (ev) {
-
+        const
+            elems = this.currentTarget.sliderData,
+            offset = this.computeOffset(ev);
+        this.renderFiller(elems.fillerEl, offset);
+        this.renderHandle(elems.handleEl, offset);
+        this.renderFacade(elems.facadeEl, 3.5);
+        this.renderStatTitle(elems.statTitleEl, 0, '-20%');
+        this.renderStatTitle(elems.statUnitEl, 1, '-70%');
     }
 
 
+
+    // on touchend handles the case where a user
+    // might click on the filler bar, resulting
+    // in the handle jumping to that tap position
     handleTouchEnd (ev) {
-        console.log('END');
+        const elems = this.currentTarget.sliderData,
+            offset = this.computeOffset(ev);
+
+        this.renderFacade(elems.facadeEl, 1);
+        this.renderFiller(elems.fillerEl, offset, '.4s transform ease-out');
+        this.renderHandle(elems.handleEl, offset);
+        this.renderStatTitle(elems.statTitleEl, 1, '30%');
+        this.renderStatTitle(elems.statUnitEl, 0, '100%');
     }
 
 
@@ -109,14 +122,17 @@ class AmbientSliders {
 
 
 
-
-
-
-
-
-
-
-
+    // calculates the offset an element needs
+    // to scale relative to the origin of the touch event
+    // and returns that as a number between 0.08 and 1
+    // 0.08 is the offset to correct for the handles 8% width
+    computeOffset (ev) {
+        const dragStartPos = ev.changedTouches[0].clientX - this.sliderOffset;
+        let range = dragStartPos / this.sliderWidth;
+        if (range > 1) range = 1;
+        if (range < 0.08) range = 0.08;
+        return range;
+    }
 
 
 
@@ -135,21 +151,35 @@ class AmbientSliders {
     }
 
 
-    renderHandle () {
-        //should render purely based on input values
+    // renders the filler bar containing the handle
+    // transition can be overwritten by an argument
+    renderFiller (elem, offset, transition = 'none') {
+        elem.style.transition = transition;
+        elem.style.transform = `scaleX(${offset})`;
     }
 
-    renderFacade () {
 
+
+    renderHandle (elem, offset) {
+        elem.style.transition = 'none';
+        elem.style.transform = `scaleX(${ 1 / offset})`;
     }
 
-    renderStatTitle () {
 
+
+    renderFacade (elem, offset) {
+        elem.style.transition = '.5s transform ease-out';
+        elem.style.transform = `scaleY(${offset})`;
     }
 
-    renderStatUnit () {
 
+    renderStatTitle (elem, opacity, yTrans) {
+        elem.style.transition = '.2s opacity linear, .2s transform linear';
+        elem.style.transform = `translateY(${yTrans})`;
+        elem.style.opacity = opacity;
     }
+
+
 
 
 
@@ -173,18 +203,3 @@ const demoSliders = new AmbientSliders({
 
 demoSliders.init();
 
-
-
-// 1. generate HTML and render to the page
-// 2. setup state and cache each list element in state
-// 3. add event listeners to parent el
-// 4. once touch start detected cache all elements for target
-
-
-
-// API
-
-// - add a cnfig object for init load
-// - add a JSON string with earlier data to load with last used settings
-// - getState of all items
-// - updateState
