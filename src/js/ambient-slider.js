@@ -1,3 +1,19 @@
-const x = () => {
-    console.log('bla');
+class AmbientSlider {
+
+    constructor (config) {
+
+    }
+
+    click () {
+
+    }
+
+
 }
+
+
+//
+
+
+
+
