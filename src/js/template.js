@@ -1,34 +1,28 @@
 
-class Template {
+export default class Template {
 
-    constructor (config) {
+    constructor (id, title) {
 
-        this.tmpl =
-            `<div id="wrapper">
-                <div id="slider-container">
-                    <div id="container">
-                        <div id="stats-overlay">
-                            <div id="title-holder">
-                                <h3 id=stat-title>${config.title}</h3>
-                                <p id="stat-unit">30%</p>
+        this.html =
+            `<li id="slider-list-${id}">
+                
+                    <div class="slider-container">
+                        <div class="stats-container">
+                            <div class="title-container">
+                                <h3>${title}</h3>
+                                <p>30%</p>
                             </div>
-                            <div id="toggle-container">
-                            </div>
+                            <div class="toggle-container"></div>                            
                         </div>
-                        <div id="facade">
-                            <div id="dragger">
-                                <div id="pill"></div>
+                        <div data-id="${id}" class="facade">
+                            <div class="filler">
+                                <div class="handle"></div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>`.trim();
+               
+            </li>`.trim();
     }
-
 }
 
 
-
-
-
-const tmpl =
