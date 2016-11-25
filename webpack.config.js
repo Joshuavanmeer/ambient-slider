@@ -1,7 +1,7 @@
 module.exports = {
 
     entry: {
-        app: __dirname + '/src/js/ambient-slider.js',
+        app: __dirname + '/src/js/ambient-sliders.js',
 
     },
 

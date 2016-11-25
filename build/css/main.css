@@ -1,0 +1,90 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+h3, p {
+    font-size: 3em;
+}
+
+.stats-container {
+    z-index: 10;
+    display: flex;
+    flex-flow: row nowrap;
+    height: 70%;
+}
+
+
+.handle {
+    background: white;
+    opacity: .8;
+    width: 8%;
+    height: 100%;
+    transform-origin: right;
+}
+
+
+.slider-container {
+    background: yellow;
+    border: 1px solid black;
+    margin: 0 auto;
+    height: 250px;
+    display: flex;
+    flex-flow: row wrap;
+    overflow: hidden;
+}
+
+
+.filler {
+    align-self: flex-end;
+    width: 100%;
+    background: red;
+    pointer-events: none;
+    height: 100%;
+    transform: scaleX(1);
+    transform-origin: left bottom;
+    display: flex;
+    justify-content: flex-end;
+}
+
+
+.title-container {
+    align-self: center;
+    height: 100px;
+    overflow: hidden;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+
+.title-container h3 {
+    align-self: center;
+    transform: translateY(30%);
+    width: 100%;
+}
+
+
+.title-container p {
+    transform: translateY(100%);
+}
+
+
+.facade {
+    background: purple;
+    align-self: flex-end;
+    width: 100%;
+    transform-origin: left bottom;
+    height: 30%;
+}
+
+
+.toggle-container {
+    background: brown;
+}
+

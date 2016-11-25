@@ -42,13 +42,307 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _template = __webpack_require__(1);
+
+	var _template2 = _interopRequireDefault(_template);
+
+	var _sliderdata = __webpack_require__(2);
+
+	var _sliderdata2 = _interopRequireDefault(_sliderdata);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var AmbientSliders = function () {
+	    function AmbientSliders(config) {
+	        _classCallCheck(this, AmbientSliders);
+
+	        this.currentTarget = {};
+	        this.tmpl = '';
+	        this.config = config;
+	        this.uId = -1;
+	        this.sliders = [];
+	        this.parentEl = config.parentEl;
+	        this.sliderOffset;
+	        this.sliderWidth;
+
+	        this.handleTouchStart = this.handleTouchStart.bind(this);
+	        this.handleTouchMove = this.handleTouchMove.bind(this);
+	        this.handleTouchEnd = this.handleTouchEnd.bind(this);
+	    }
+
+	    // invokes initialization actions, event listeners are
+	    // attached individually as they have very specific actions
+
+
+	    _createClass(AmbientSliders, [{
+	        key: 'init',
+	        value: function init(preset) {
+	            this.buildSliders();
+	            this.renderInit();
+	            this.handleEvents(this.parentEl, 'addEventListener', ['touchstart'], this.handleTouchStart);
+	            this.handleEvents(this.parentEl, 'addEventListener', ['touchmove'], this.handleTouchMove);
+	            this.handleEvents(this.parentEl, 'addEventListener', ['touchend'], this.handleTouchEnd);
+	        }
+
+	        // build the sliders templates according to config
+	        // and instantiate a corresponding SliderData
+	        // to store caching and state for later use
+
+	    }, {
+	        key: 'buildSliders',
+	        value: function buildSliders() {
+	            var _this = this;
+
+	            var sliders = this.config.sliders;
+	            sliders.forEach(function (slider) {
+	                var template = new _template2.default(++_this.uId, slider.title);
+	                _this.tmpl += template.html;
+	                var sliderData = new _sliderdata2.default(_this.uId, slider.range, slider.unit, slider.title);
+	                _this.sliders.push(sliderData);
+	            });
+	        }
+
+	        // takes care of event listener assignment
+
+	    }, {
+	        key: 'handleEvents',
+	        value: function handleEvents(elem, method, events, cbfn) {
+	            events.forEach(function (event) {
+	                elem[method](event, function (ev) {
+	                    cbfn(ev);
+	                });
+	            });
+	        }
+
+	        // caches SliderData instance elements and
+	        // caches actual target info to state
+
+	    }, {
+	        key: 'handleTouchStart',
+	        value: function handleTouchStart(ev) {
+	            var elem = this.isValidTarget(ev);
+	            if (elem) {
+	                var id = elem.dataset.id;
+	                this.sliders[id].cacheData(id);
+	                this.currentTarget.elem = elem;
+	                this.currentTarget.id = id;
+	                this.currentTarget.sliderData = this.sliders[id];
+	                this.sliderOffset = elem.offsetLeft;
+	                this.sliderWidth = elem.offsetWidth;
+	            }
+	        }
+
+	        // handles the dispatching of render events
+	        // for each move iteration
+
+	    }, {
+	        key: 'handleTouchMove',
+	        value: function handleTouchMove(ev) {
+	            var elems = this.currentTarget.sliderData,
+	                offset = this.computeOffset(ev);
+	            this.renderFiller(elems.fillerEl, offset);
+	            this.renderHandle(elems.handleEl, offset);
+	            this.renderFacade(elems.facadeEl, 3.5);
+	            this.renderStatTitle(elems.statTitleEl, 0, '-20%');
+	            this.renderStatTitle(elems.statUnitEl, 1, '-70%');
+	        }
+
+	        // on touchend handles the case where a user
+	        // might click on the filler bar, resulting
+	        // in the handle jumping to that tap position
+
+	    }, {
+	        key: 'handleTouchEnd',
+	        value: function handleTouchEnd(ev) {
+	            var elems = this.currentTarget.sliderData,
+	                offset = this.computeOffset(ev);
+
+	            this.renderFacade(elems.facadeEl, 1);
+	            this.renderFiller(elems.fillerEl, offset, '.4s transform ease-out');
+	            this.renderHandle(elems.handleEl, offset);
+	            this.renderStatTitle(elems.statTitleEl, 1, '30%');
+	            this.renderStatTitle(elems.statUnitEl, 0, '100%');
+	        }
+
+	        // checks if target requires action
+
+	    }, {
+	        key: 'isValidTarget',
+	        value: function isValidTarget(ev) {
+	            var classes = ev.target.classList;
+	            if (classes.contains('facade') === true) {
+	                return ev.target;
+	            } else return false;
+	        }
+
+	        // calculates the offset an element needs
+	        // to scale relative to the origin of the touch event
+	        // and returns that as a number between 0.08 and 1
+	        // 0.08 is the offset to correct for the handles 8% width
+
+	    }, {
+	        key: 'computeOffset',
+	        value: function computeOffset(ev) {
+	            var dragStartPos = ev.changedTouches[0].clientX - this.sliderOffset;
+	            var range = dragStartPos / this.sliderWidth;
+	            if (range > 1) range = 1;
+	            if (range < 0.08) range = 0.08;
+	            return range;
+	        }
+
+	        // sends back state of stored sliders
+	        // in JSON format?
+
+	    }, {
+	        key: 'sendResponse',
+	        value: function sendResponse() {
+	            if (this.state.callback) {
+	                //invoke calback and send reponse
+	            }
+	        }
+
+	        // renders template to DOM on init load
+
+	    }, {
+	        key: 'renderInit',
+	        value: function renderInit() {
+	            this.parentEl.insertAdjacentHTML('afterbegin', this.tmpl);
+	        }
+
+	        // renders the filler bar containing the handle
+	        // transition can be overwritten by an argument
+
+	    }, {
+	        key: 'renderFiller',
+	        value: function renderFiller(elem, offset) {
+	            var transition = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'none';
+
+	            elem.style.transition = transition;
+	            elem.style.transform = 'scaleX(' + offset + ')';
+	        }
+	    }, {
+	        key: 'renderHandle',
+	        value: function renderHandle(elem, offset) {
+	            elem.style.transition = 'none';
+	            elem.style.transform = 'scaleX(' + 1 / offset + ')';
+	        }
+	    }, {
+	        key: 'renderFacade',
+	        value: function renderFacade(elem, offset) {
+	            elem.style.transition = '.5s transform ease-out';
+	            elem.style.transform = 'scaleY(' + offset + ')';
+	        }
+	    }, {
+	        key: 'renderStatTitle',
+	        value: function renderStatTitle(elem, opacity, yTrans) {
+	            elem.style.transition = '.2s opacity linear, .2s transform linear';
+	            elem.style.transform = 'translateY(' + yTrans + ')';
+	            elem.style.opacity = opacity;
+	        }
+	    }]);
+
+	    return AmbientSliders;
+	}();
+
+	var demoSliders = new AmbientSliders({
+	    parentEl: document.getElementById('main-list'),
+	    sliders: [{ title: 'Payment split', range: [0, 100], unit: '%', unitPos: 'after' }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before' }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before' }]
+	});
+
+	demoSliders.init();
+
+/***/ },
+/* 1 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Template = function Template(id, title) {
+	    _classCallCheck(this, Template);
+
+	    this.html = ("<li id=\"slider-list-" + id + "\">\n                \n                    <div class=\"slider-container\">\n                        <div class=\"stats-container\">\n                            <div class=\"title-container\">\n                                <h3>" + title + "</h3>\n                                <p>30%</p>\n                            </div>\n                            <div class=\"toggle-container\"></div>                            \n                        </div>\n                        <div data-id=\"" + id + "\" class=\"facade\">\n                            <div class=\"filler\">\n                                <div class=\"handle\"></div>\n                            </div>\n                        </div>\n                    </div>\n               \n            </li>").trim();
+	};
+
+	exports.default = Template;
+
+/***/ },
+/* 2 */
 /***/ function(module, exports) {
 
 	'use strict';
 
-	var x = function x() {
-	    console.log('bla');
-	};
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var SliderData = function () {
+	    function SliderData(id, range, unit, title) {
+	        var active = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+	        var cached = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
+
+	        _classCallCheck(this, SliderData);
+
+	        this.id = id;
+	        this.title = title;
+	        this.range = range;
+	        this.unit = unit;
+	        this.active = active;
+	        this.cached = cached;
+	    }
+
+	    //caches all elements for future reference after it's been touched
+
+
+	    _createClass(SliderData, [{
+	        key: 'cacheData',
+	        value: function cacheData(id) {
+	            if (!this.cached) {
+	                var listEl = 'li#slider-list-' + id;
+	                this.fillerEl = document.querySelector(listEl + ' div.filler');
+	                this.handleEl = document.querySelector(listEl + ' div.handle');
+	                this.facadeEl = document.querySelector(listEl + ' div.facade');
+	                this.statTitleEl = document.querySelector(listEl + ' h3');
+	                this.statUnitEl = document.querySelector(listEl + ' p');
+	                this.cached = true;
+	                console.log(this);
+	            } else {
+	                console.log('aready cached it before');
+	            }
+	        }
+	    }, {
+	        key: 'updateValue',
+	        value: function updateValue(newVal) {
+	            this.value = newVal;
+	        }
+	    }, {
+	        key: 'getState',
+	        value: function getState() {
+	            //returns the state as a Json string?
+	        }
+	    }]);
+
+	    return SliderData;
+	}();
+
+	exports.default = SliderData;
 
 /***/ }
 /******/ ]);
