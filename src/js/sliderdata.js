@@ -8,28 +8,30 @@ export default class SliderData {
         this.unit   = unit;
         this.active = active;
         this.cached = cached;
+        this.lastValue;
     }
 
 
     //caches all elements for future reference after it's been touched
     cacheData (id) {
         if (!this.cached) {
-            const listEl        = 'li#slider-list-' + id;
-            this.fillerEl         = document.querySelector(listEl + ' div.filler');
-            this.handleEl       = document.querySelector(listEl + ' div.handle');
-            this.facadeEl       = document.querySelector(listEl + ' div.facade');
-            this.statTitleEl    = document.querySelector(listEl + ' h3');
-            this.statUnitEl     = document.querySelector(listEl + ' p');
-            this.cached         = true;
-            console.log(this);
-        } else {
-            console.log('aready cached it before');
+            const listEl            = 'li#slider-list-' + id;
+            this.fillerEl           = document.querySelector(listEl + ' div.filler');
+            this.handleEl           = document.querySelector(listEl + ' div.handle');
+            this.facadeEl           = document.querySelector(listEl + ' div.facade');
+            this.statTitleEl        = document.querySelector(listEl + ' h3');
+            this.statContainerEl    = document.querySelector(listEl + ' p');
+            this.statValueEl        = document.querySelector(listEl + ' span.stat-value');
+            this.cached             = true;
+        }
+        else {
+            console.log('already cached it before');
         }
     }
 
 
-    updateValue (newVal) {
-        this.value = newVal;
+    updateLastValue (newVal) {
+        this.lastValue = newVal;
     }
 
 

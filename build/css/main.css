@@ -1,6 +1,15 @@
+@import url('https://fonts.googleapis.com/css?family=Quicksand:400,700');
+
+li {
+    margin: 0;
+    list-style: none;
+}
+
 body {
     margin: 0;
     padding: 0;
+    font-family: 'Quicksand', sans-serif;
+    color: white;
 }
 
 * {
@@ -10,7 +19,9 @@ body {
 }
 
 h3, p {
-    font-size: 3em;
+    font-size: 4em;
+    font-weight: 400;
+    text-transform: uppercase;
 }
 
 .stats-container {
@@ -24,7 +35,7 @@ h3, p {
 .handle {
     background: white;
     opacity: .8;
-    width: 8%;
+    width: 10%;
     height: 100%;
     transform-origin: right;
 }
@@ -34,7 +45,7 @@ h3, p {
     background: yellow;
     border: 1px solid black;
     margin: 0 auto;
-    height: 250px;
+    height: 350px;
     display: flex;
     flex-flow: row wrap;
     overflow: hidden;
@@ -60,6 +71,7 @@ h3, p {
     overflow: hidden;
     display: flex;
     flex-flow: row wrap;
+    padding-left: 50px;
 }
 
 
@@ -86,5 +98,36 @@ h3, p {
 
 .toggle-container {
     background: brown;
+}
+
+
+#slider-list-0 .slider-container {
+    background: url('../img/bg1.jpg');
+    background-size: auto 100%;
+}
+
+
+#slider-list-0 .facade {
+    background: rgba(0, 0, 0, .5);
+}
+
+#slider-list-0 .filler {
+    background: rgba(88, 115, 187, .7);
+}
+
+
+
+#slider-list-1 .slider-container {
+    background: url('../img/bg2.jpg');
+    background-size: auto 100%;
+}
+
+
+#slider-list-1 .facade {
+    background: rgba(0, 0, 0, .5);
+}
+
+#slider-list-1 .filler {
+    background: rgba(248, 171, 39, .7);
 }
 
