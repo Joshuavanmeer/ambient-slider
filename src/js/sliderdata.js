@@ -1,14 +1,14 @@
 export default class SliderData {
 
-    constructor (id, range, unit, title, active = false, cached = false) {
+    constructor (id, title, range, unit, dec, cached = false) {
 
         this.id     = id;
         this.title  = title;
         this.range  = range;
         this.unit   = unit;
-        this.active = active;
+        this.dec    = dec;
         this.cached = cached;
-        this.lastValue;
+        this.lastOffset;
     }
 
 
@@ -24,19 +24,19 @@ export default class SliderData {
             this.statValueEl        = document.querySelector(listEl + ' span.stat-value');
             this.cached             = true;
         }
-        else {
-            console.log('already cached it before');
-        }
     }
 
 
-    updateLastValue (newVal) {
-        this.lastValue = newVal;
+    updateLastOffset (offset) {
+        this.lastOffset = offset;
     }
 
 
     getState () {
-        //returns the state as a Json string?
+        return {
+            id: this.id,
+            offset: this.lastOffset ? this.lastOffset : 1
+        };
     }
 
 

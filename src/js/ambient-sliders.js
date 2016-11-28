@@ -3,7 +3,7 @@ import { default as SliderData }    from './sliderdata.js';
 
 
 
-class AmbientSliders {
+export default class AmbientSliders {
 
     constructor (config) {
 
@@ -15,6 +15,7 @@ class AmbientSliders {
         this.parentEl           = config.parentEl;
         this.minRange           = 0.1;
         this.maxRange           = 1;
+        this.cbfn               = config.cbfn;
         this.sliderOffset;
         this.sliderWidth;
 
@@ -29,8 +30,11 @@ class AmbientSliders {
     // invokes initialization actions, event listeners are
     // attached individually as they have very specific actions
     init (preset) {
+        // builds templates for sliders according to class config
         this.buildSliders();
         this.renderInit();
+        // determines if it should load a preset of previously saved data
+        if (preset) this.handlePreset(preset);
         this.handleEvents(this.parentEl, 'addEventListener', ['touchstart'], this.handleTouchStart);
         this.handleEvents(this.parentEl, 'addEventListener', ['touchmove'], this.handleTouchMove);
         this.handleEvents(this.parentEl, 'addEventListener', ['touchend'], this.handleTouchEnd);
@@ -46,7 +50,7 @@ class AmbientSliders {
         sliders.forEach( slider => {
             let template = new Template(++this.uId, slider.title, slider.unitPos, slider.unit);
             this.tmpl += template.html
-            let sliderData = new SliderData(this.uId, slider.range, slider.unit, slider.title);
+            let sliderData = new SliderData(this.uId, slider.title, slider.range, slider.unit, slider.dec);
             this.sliders.push(sliderData);
         });
     }
@@ -61,7 +65,6 @@ class AmbientSliders {
             });
         });
     }
-
 
 
 
@@ -123,10 +126,28 @@ class AmbientSliders {
             this.renderStatTitle(sliderData.statTitleEl, 1, '30%');
             this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 0, '100%');
             // updates sliderData instance offset value
-            sliderData.updateLastValue(offset);
+            sliderData.updateLastOffset(offset);
+            // handle the callback function after each action
+            if (this.cbfn) {
+                this.sendResponse();
+            }
         }
     }
 
+
+
+    // takes a preset of data and renders all sliders
+    // accordingly in the event this data was served
+    handlePreset (preset) {
+        this.sliders.forEach( (slider, i) => {
+            slider.cacheData(slider.id);
+            if (slider.id === preset[i].id) {
+                slider.updateLastOffset(preset[i].offset);
+            }
+            this.renderFiller(slider.fillerEl, slider.lastOffset);
+            this.renderHandle(slider.handleEl, slider.lastOffset);
+        });
+    }
 
 
 
@@ -167,19 +188,23 @@ class AmbientSliders {
 
 
 
-    // sends back state of stored sliders
-    // in JSON format?
+    // sends back the state of each slider
+    // to the callback function
     sendResponse () {
-        if (this.state.callback) {
-            //invoke calback and send reponse
-        }
+        const data = [];
+        this.sliders.forEach( slider => {
+            data.push(slider.getState());
+        });
+        this.cbfn(data);
     }
+
 
 
     // renders template to DOM on init load
     renderInit () {
         this.parentEl.insertAdjacentHTML('afterbegin', this.tmpl);
     }
+
 
 
     // renders the filler bar containing the handle
@@ -190,11 +215,13 @@ class AmbientSliders {
     }
 
 
+
     // renders the handle that users can interact with
     renderHandle (elem, offset) {
         elem.style.transition = 'none';
         elem.style.transform = `scaleX(${ 1 / offset})`;
     }
+
 
 
     // renders the background filler
@@ -213,6 +240,7 @@ class AmbientSliders {
     }
 
 
+
     // renders and animates the h3 and unit display
     renderStatValue (statContainer, statValue, opacity, yTrans, unit = '') {
         statContainer.style.transition = '.2s opacity linear, .2s transform linear';
@@ -225,14 +253,4 @@ class AmbientSliders {
 }
 
 
-const demoSliders = new AmbientSliders({
-    parentEl: document.getElementById('main-list'),
-    sliders: [
-        { title: 'Payment split', range: [0, 100], unit: '%', unitPos: 'after', dec: 0 },
-        { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 2},
-        { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 2}
-    ]
-});
-
-demoSliders.init();
 
