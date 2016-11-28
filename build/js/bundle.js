@@ -46,13 +46,49 @@
 
 	'use strict';
 
+	var _ambientSliders = __webpack_require__(1);
+
+	var _ambientSliders2 = _interopRequireDefault(_ambientSliders);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var demoSliders = new _ambientSliders2.default({
+	    parentEl: document.getElementById('main-list'),
+	    sliders: [{ title: 'Payment split', range: [0, 100], unit: '%', unitPos: 'after', dec: 0 }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 2 }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 4 }],
+	    cbfn: saveSlidersState
+	});
+
+	function init() {
+	    if (window.localStorage.slidersPreset) {
+	        var preset = window.localStorage.getItem('slidersPreset');
+	        demoSliders.init(JSON.parse(preset));
+	    } else demoSliders.init();
+	}
+
+	// takes the response and stores them to localstorage
+	function saveSlidersState(response) {
+	    window.localStorage.setItem('slidersPreset', JSON.stringify(response));
+	}
+
+	init();
+
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _template = __webpack_require__(1);
+	var _template = __webpack_require__(2);
 
 	var _template2 = _interopRequireDefault(_template);
 
-	var _sliderdata = __webpack_require__(2);
+	var _sliderdata = __webpack_require__(3);
 
 	var _sliderdata2 = _interopRequireDefault(_sliderdata);
 
@@ -72,6 +108,7 @@
 	        this.parentEl = config.parentEl;
 	        this.minRange = 0.1;
 	        this.maxRange = 1;
+	        this.cbfn = config.cbfn;
 	        this.sliderOffset;
 	        this.sliderWidth;
 
@@ -87,8 +124,11 @@
 	    _createClass(AmbientSliders, [{
 	        key: 'init',
 	        value: function init(preset) {
+	            // builds templates for sliders according to class config
 	            this.buildSliders();
 	            this.renderInit();
+	            // determines if it should load a preset of previously saved data
+	            if (preset) this.handlePreset(preset);
 	            this.handleEvents(this.parentEl, 'addEventListener', ['touchstart'], this.handleTouchStart);
 	            this.handleEvents(this.parentEl, 'addEventListener', ['touchmove'], this.handleTouchMove);
 	            this.handleEvents(this.parentEl, 'addEventListener', ['touchend'], this.handleTouchEnd);
@@ -107,7 +147,7 @@
 	            sliders.forEach(function (slider) {
 	                var template = new _template2.default(++_this.uId, slider.title, slider.unitPos, slider.unit);
 	                _this.tmpl += template.html;
-	                var sliderData = new _sliderdata2.default(_this.uId, slider.range, slider.unit, slider.title);
+	                var sliderData = new _sliderdata2.default(_this.uId, slider.title, slider.range, slider.unit, slider.dec);
 	                _this.sliders.push(sliderData);
 	            });
 	        }
@@ -186,8 +226,30 @@
 	                this.renderStatTitle(sliderData.statTitleEl, 1, '30%');
 	                this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 0, '100%');
 	                // updates sliderData instance offset value
-	                sliderData.updateLastValue(offset);
+	                sliderData.updateLastOffset(offset);
+	                // handle the callback function after each action
+	                if (this.cbfn) {
+	                    this.sendResponse();
+	                }
 	            }
+	        }
+
+	        // takes a preset of data and renders all sliders
+	        // accordingly in the event this data was served
+
+	    }, {
+	        key: 'handlePreset',
+	        value: function handlePreset(preset) {
+	            var _this2 = this;
+
+	            this.sliders.forEach(function (slider, i) {
+	                slider.cacheData(slider.id);
+	                if (slider.id === preset[i].id) {
+	                    slider.updateLastOffset(preset[i].offset);
+	                }
+	                _this2.renderFiller(slider.fillerEl, slider.lastOffset);
+	                _this2.renderHandle(slider.handleEl, slider.lastOffset);
+	            });
 	        }
 
 	        // checks if target is valid and requires action
@@ -226,19 +288,20 @@
 	                deltaRange = this.maxRange - this.minRange,
 	                offsetPercentage = (offset - this.minRange) / deltaRange,
 	                unitPercentage = offsetPercentage * deltaUnitRange;
-
 	            return '' + unitPercentage.toFixed(sliderData.dec);
 	        }
 
-	        // sends back state of stored sliders
-	        // in JSON format?
+	        // sends back the state of each slider
+	        // to the callback function
 
 	    }, {
 	        key: 'sendResponse',
 	        value: function sendResponse() {
-	            if (this.state.callback) {
-	                //invoke calback and send reponse
-	            }
+	            var data = [];
+	            this.sliders.forEach(function (slider) {
+	                data.push(slider.getState());
+	            });
+	            this.cbfn(data);
 	        }
 
 	        // renders template to DOM on init load
@@ -306,15 +369,10 @@
 	    return AmbientSliders;
 	}();
 
-	var demoSliders = new AmbientSliders({
-	    parentEl: document.getElementById('main-list'),
-	    sliders: [{ title: 'Payment split', range: [0, 100], unit: '%', unitPos: 'after', dec: 0 }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 2 }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 2 }]
-	});
-
-	demoSliders.init();
+	exports.default = AmbientSliders;
 
 /***/ },
-/* 1 */
+/* 2 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -343,7 +401,7 @@
 	exports.default = Template;
 
 /***/ },
-/* 2 */
+/* 3 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -357,8 +415,7 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var SliderData = function () {
-	    function SliderData(id, range, unit, title) {
-	        var active = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+	    function SliderData(id, title, range, unit, dec) {
 	        var cached = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
 
 	        _classCallCheck(this, SliderData);
@@ -367,9 +424,9 @@
 	        this.title = title;
 	        this.range = range;
 	        this.unit = unit;
-	        this.active = active;
+	        this.dec = dec;
 	        this.cached = cached;
-	        this.lastValue;
+	        this.lastOffset;
 	    }
 
 	    //caches all elements for future reference after it's been touched
@@ -387,19 +444,20 @@
 	                this.statContainerEl = document.querySelector(listEl + ' p');
 	                this.statValueEl = document.querySelector(listEl + ' span.stat-value');
 	                this.cached = true;
-	            } else {
-	                console.log('already cached it before');
 	            }
 	        }
 	    }, {
-	        key: 'updateLastValue',
-	        value: function updateLastValue(newVal) {
-	            this.lastValue = newVal;
+	        key: 'updateLastOffset',
+	        value: function updateLastOffset(offset) {
+	            this.lastOffset = offset;
 	        }
 	    }, {
 	        key: 'getState',
 	        value: function getState() {
-	            //returns the state as a Json string?
+	            return {
+	                id: this.id,
+	                offset: this.lastOffset ? this.lastOffset : 1
+	            };
 	        }
 	    }]);
 
