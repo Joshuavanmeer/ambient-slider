@@ -70,6 +70,8 @@
 	        this.uId = -1;
 	        this.sliders = [];
 	        this.parentEl = config.parentEl;
+	        this.minRange = 0.1;
+	        this.maxRange = 1;
 	        this.sliderOffset;
 	        this.sliderWidth;
 
@@ -103,7 +105,7 @@
 
 	            var sliders = this.config.sliders;
 	            sliders.forEach(function (slider) {
-	                var template = new _template2.default(++_this.uId, slider.title);
+	                var template = new _template2.default(++_this.uId, slider.title, slider.unitPos, slider.unit);
 	                _this.tmpl += template.html;
 	                var sliderData = new _sliderdata2.default(_this.uId, slider.range, slider.unit, slider.title);
 	                _this.sliders.push(sliderData);
@@ -130,11 +132,17 @@
 	        value: function handleTouchStart(ev) {
 	            var elem = this.isValidTarget(ev);
 	            if (elem) {
+	                // retrieves the id of element that has been interacted with
 	                var id = elem.dataset.id;
+	                // caches elements for this sliderdata instance
 	                this.sliders[id].cacheData(id);
+	                // cache necessary items to state
 	                this.currentTarget.elem = elem;
 	                this.currentTarget.id = id;
+	                // cache target sliderData instance to state
+	                // so other functions can target it
 	                this.currentTarget.sliderData = this.sliders[id];
+	                // get values to calculate actions against
 	                this.sliderOffset = elem.offsetLeft;
 	                this.sliderWidth = elem.offsetWidth;
 	            }
@@ -146,13 +154,18 @@
 	    }, {
 	        key: 'handleTouchMove',
 	        value: function handleTouchMove(ev) {
-	            var elems = this.currentTarget.sliderData,
-	                offset = this.computeOffset(ev);
-	            this.renderFiller(elems.fillerEl, offset);
-	            this.renderHandle(elems.handleEl, offset);
-	            this.renderFacade(elems.facadeEl, 3.5);
-	            this.renderStatTitle(elems.statTitleEl, 0, '-20%');
-	            this.renderStatTitle(elems.statUnitEl, 1, '-70%');
+	            var elem = this.isValidTarget(ev);
+	            if (elem) {
+	                var sliderData = this.currentTarget.sliderData,
+	                    offset = this.computeOffset(ev),
+	                    statValue = this.computeStatValue(sliderData, offset);
+
+	                this.renderFiller(sliderData.fillerEl, offset);
+	                this.renderHandle(sliderData.handleEl, offset);
+	                this.renderFacade(sliderData.facadeEl, 3.5);
+	                this.renderStatTitle(sliderData.statTitleEl, 0, '-20%');
+	                this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 1, '-70%', statValue);
+	            }
 	        }
 
 	        // on touchend handles the case where a user
@@ -162,17 +175,22 @@
 	    }, {
 	        key: 'handleTouchEnd',
 	        value: function handleTouchEnd(ev) {
-	            var elems = this.currentTarget.sliderData,
-	                offset = this.computeOffset(ev);
+	            var elem = this.isValidTarget(ev);
+	            if (elem) {
+	                var sliderData = this.currentTarget.sliderData,
+	                    offset = this.computeOffset(ev);
 
-	            this.renderFacade(elems.facadeEl, 1);
-	            this.renderFiller(elems.fillerEl, offset, '.4s transform ease-out');
-	            this.renderHandle(elems.handleEl, offset);
-	            this.renderStatTitle(elems.statTitleEl, 1, '30%');
-	            this.renderStatTitle(elems.statUnitEl, 0, '100%');
+	                this.renderFacade(sliderData.facadeEl, 1);
+	                this.renderFiller(sliderData.fillerEl, offset, '.4s transform ease-out');
+	                this.renderHandle(sliderData.handleEl, offset);
+	                this.renderStatTitle(sliderData.statTitleEl, 1, '30%');
+	                this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 0, '100%');
+	                // updates sliderData instance offset value
+	                sliderData.updateLastValue(offset);
+	            }
 	        }
 
-	        // checks if target requires action
+	        // checks if target is valid and requires action
 
 	    }, {
 	        key: 'isValidTarget',
@@ -193,9 +211,23 @@
 	        value: function computeOffset(ev) {
 	            var dragStartPos = ev.changedTouches[0].clientX - this.sliderOffset;
 	            var range = dragStartPos / this.sliderWidth;
-	            if (range > 1) range = 1;
-	            if (range < 0.08) range = 0.08;
+	            if (range > this.maxRange) range = this.maxRange;
+	            if (range < this.minRange) range = this.minRange;
 	            return range;
+	        }
+
+	        // calculates the range unit based on the
+	        // current offset ( 0.08 - 1 ) and  formats it
+
+	    }, {
+	        key: 'computeStatValue',
+	        value: function computeStatValue(sliderData, offset) {
+	            var deltaUnitRange = sliderData.range[1] - sliderData.range[0],
+	                deltaRange = this.maxRange - this.minRange,
+	                offsetPercentage = (offset - this.minRange) / deltaRange,
+	                unitPercentage = offsetPercentage * deltaUnitRange;
+
+	            return '' + unitPercentage.toFixed(sliderData.dec);
 	        }
 
 	        // sends back state of stored sliders
@@ -228,24 +260,46 @@
 	            elem.style.transition = transition;
 	            elem.style.transform = 'scaleX(' + offset + ')';
 	        }
+
+	        // renders the handle that users can interact with
+
 	    }, {
 	        key: 'renderHandle',
 	        value: function renderHandle(elem, offset) {
 	            elem.style.transition = 'none';
 	            elem.style.transform = 'scaleX(' + 1 / offset + ')';
 	        }
+
+	        // renders the background filler
+
 	    }, {
 	        key: 'renderFacade',
 	        value: function renderFacade(elem, offset) {
 	            elem.style.transition = '.5s transform ease-out';
 	            elem.style.transform = 'scaleY(' + offset + ')';
 	        }
+
+	        // renders and animates the h3 and unit display
+
 	    }, {
 	        key: 'renderStatTitle',
 	        value: function renderStatTitle(elem, opacity, yTrans) {
 	            elem.style.transition = '.2s opacity linear, .2s transform linear';
 	            elem.style.transform = 'translateY(' + yTrans + ')';
 	            elem.style.opacity = opacity;
+	        }
+
+	        // renders and animates the h3 and unit display
+
+	    }, {
+	        key: 'renderStatValue',
+	        value: function renderStatValue(statContainer, statValue, opacity, yTrans) {
+	            var unit = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : '';
+
+	            statContainer.style.transition = '.2s opacity linear, .2s transform linear';
+	            statContainer.style.transform = 'translateY(' + yTrans + ')';
+	            statContainer.style.opacity = opacity;
+	            statValue.textContent = unit;
 	        }
 	    }]);
 
@@ -254,7 +308,7 @@
 
 	var demoSliders = new AmbientSliders({
 	    parentEl: document.getElementById('main-list'),
-	    sliders: [{ title: 'Payment split', range: [0, 100], unit: '%', unitPos: 'after' }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before' }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before' }]
+	    sliders: [{ title: 'Payment split', range: [0, 100], unit: '%', unitPos: 'after', dec: 0 }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 2 }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 2 }]
 	});
 
 	demoSliders.init();
@@ -263,7 +317,7 @@
 /* 1 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -271,10 +325,19 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var Template = function Template(id, title) {
+	var Template = function Template(id, title, sliderPos, sliderUnit) {
 	    _classCallCheck(this, Template);
 
-	    this.html = ("<li id=\"slider-list-" + id + "\">\n                \n                    <div class=\"slider-container\">\n                        <div class=\"stats-container\">\n                            <div class=\"title-container\">\n                                <h3>" + title + "</h3>\n                                <p>30%</p>\n                            </div>\n                            <div class=\"toggle-container\"></div>                            \n                        </div>\n                        <div data-id=\"" + id + "\" class=\"facade\">\n                            <div class=\"filler\">\n                                <div class=\"handle\"></div>\n                            </div>\n                        </div>\n                    </div>\n               \n            </li>").trim();
+	    this.unitBefore = '';
+	    this.unitAfter = '';
+
+	    if (sliderPos === 'before') {
+	        this.unitBefore = '<span class="stat-unit">' + sliderUnit + '</span>';
+	    } else if (sliderPos === 'after') {
+	        this.unitAfter = '<span class="stat-unit">' + sliderUnit + '</span>';
+	    }
+
+	    this.html = ('<li id="slider-list-' + id + '">                \n                    <div class="slider-container">\n                        <div class="stats-container">\n                            <div class="title-container">\n                                <h3>' + title + '</h3>\n                                <p>' + this.unitBefore + '<span class="stat-value">30</span>' + this.unitAfter + '</p>\n                            </div>\n                            <div class="toggle-container"></div>                            \n                        </div>\n                        <div data-id="' + id + '" class="facade">\n                            <div class="filler">\n                                <div class="handle"></div>\n                            </div>\n                        </div>\n                    </div>               \n            </li>').trim();
 	};
 
 	exports.default = Template;
@@ -306,6 +369,7 @@
 	        this.unit = unit;
 	        this.active = active;
 	        this.cached = cached;
+	        this.lastValue;
 	    }
 
 	    //caches all elements for future reference after it's been touched
@@ -320,17 +384,17 @@
 	                this.handleEl = document.querySelector(listEl + ' div.handle');
 	                this.facadeEl = document.querySelector(listEl + ' div.facade');
 	                this.statTitleEl = document.querySelector(listEl + ' h3');
-	                this.statUnitEl = document.querySelector(listEl + ' p');
+	                this.statContainerEl = document.querySelector(listEl + ' p');
+	                this.statValueEl = document.querySelector(listEl + ' span.stat-value');
 	                this.cached = true;
-	                console.log(this);
 	            } else {
-	                console.log('aready cached it before');
+	                console.log('already cached it before');
 	            }
 	        }
 	    }, {
-	        key: 'updateValue',
-	        value: function updateValue(newVal) {
-	            this.value = newVal;
+	        key: 'updateLastValue',
+	        value: function updateLastValue(newVal) {
+	            this.lastValue = newVal;
 	        }
 	    }, {
 	        key: 'getState',
