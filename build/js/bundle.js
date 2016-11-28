@@ -154,15 +154,18 @@
 	    }, {
 	        key: 'handleTouchMove',
 	        value: function handleTouchMove(ev) {
-	            var sliderData = this.currentTarget.sliderData,
-	                offset = this.computeOffset(ev),
-	                statValue = this.computeStatValue(sliderData, offset);
+	            var elem = this.isValidTarget(ev);
+	            if (elem) {
+	                var sliderData = this.currentTarget.sliderData,
+	                    offset = this.computeOffset(ev),
+	                    statValue = this.computeStatValue(sliderData, offset);
 
-	            this.renderFiller(sliderData.fillerEl, offset);
-	            this.renderHandle(sliderData.handleEl, offset);
-	            this.renderFacade(sliderData.facadeEl, 3.5);
-	            this.renderStatTitle(sliderData.statTitleEl, 0, '-20%');
-	            this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 1, '-70%', statValue);
+	                this.renderFiller(sliderData.fillerEl, offset);
+	                this.renderHandle(sliderData.handleEl, offset);
+	                this.renderFacade(sliderData.facadeEl, 3.5);
+	                this.renderStatTitle(sliderData.statTitleEl, 0, '-20%');
+	                this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 1, '-70%', statValue);
+	            }
 	        }
 
 	        // on touchend handles the case where a user
@@ -172,16 +175,19 @@
 	    }, {
 	        key: 'handleTouchEnd',
 	        value: function handleTouchEnd(ev) {
-	            var sliderData = this.currentTarget.sliderData,
-	                offset = this.computeOffset(ev);
+	            var elem = this.isValidTarget(ev);
+	            if (elem) {
+	                var sliderData = this.currentTarget.sliderData,
+	                    offset = this.computeOffset(ev);
 
-	            this.renderFacade(sliderData.facadeEl, 1);
-	            this.renderFiller(sliderData.fillerEl, offset, '.4s transform ease-out');
-	            this.renderHandle(sliderData.handleEl, offset);
-	            this.renderStatTitle(sliderData.statTitleEl, 1, '30%');
-	            this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 0, '100%');
-	            // updates sliderData instance offset value
-	            sliderData.updateLastValue(offset);
+	                this.renderFacade(sliderData.facadeEl, 1);
+	                this.renderFiller(sliderData.fillerEl, offset, '.4s transform ease-out');
+	                this.renderHandle(sliderData.handleEl, offset);
+	                this.renderStatTitle(sliderData.statTitleEl, 1, '30%');
+	                this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 0, '100%');
+	                // updates sliderData instance offset value
+	                sliderData.updateLastValue(offset);
+	            }
 	        }
 
 	        // checks if target is valid and requires action
@@ -302,7 +308,7 @@
 
 	var demoSliders = new AmbientSliders({
 	    parentEl: document.getElementById('main-list'),
-	    sliders: [{ title: 'Payment split', range: [0, 100], unit: ' Guns and stuff', unitPos: 'after', dec: 0 }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 2 }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 2 }]
+	    sliders: [{ title: 'Payment split', range: [0, 100], unit: '%', unitPos: 'after', dec: 0 }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 2 }, { title: 'Total Money', range: [0, 30000], unit: '$', unitPos: 'before', dec: 2 }]
 	});
 
 	demoSliders.init();

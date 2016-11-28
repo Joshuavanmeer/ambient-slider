@@ -91,16 +91,19 @@ class AmbientSliders {
     // handles the dispatching of render events
     // for each move iteration
     handleTouchMove (ev) {
-        const
-            sliderData = this.currentTarget.sliderData,
-            offset = this.computeOffset(ev),
-            statValue = this.computeStatValue(sliderData, offset);
+        const elem = this.isValidTarget(ev);
+        if (elem) {
+            const
+                sliderData = this.currentTarget.sliderData,
+                offset = this.computeOffset(ev),
+                statValue = this.computeStatValue(sliderData, offset);
 
-        this.renderFiller(sliderData.fillerEl, offset);
-        this.renderHandle(sliderData.handleEl, offset);
-        this.renderFacade(sliderData.facadeEl, 3.5);
-        this.renderStatTitle(sliderData.statTitleEl, 0, '-20%');
-        this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 1, '-70%', statValue);
+            this.renderFiller(sliderData.fillerEl, offset);
+            this.renderHandle(sliderData.handleEl, offset);
+            this.renderFacade(sliderData.facadeEl, 3.5);
+            this.renderStatTitle(sliderData.statTitleEl, 0, '-20%');
+            this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 1, '-70%', statValue);
+        }
     }
 
 
@@ -109,16 +112,19 @@ class AmbientSliders {
     // might click on the filler bar, resulting
     // in the handle jumping to that tap position
     handleTouchEnd (ev) {
-        const sliderData = this.currentTarget.sliderData,
-            offset = this.computeOffset(ev);
+        const elem = this.isValidTarget(ev);
+        if (elem) {
+            const sliderData = this.currentTarget.sliderData,
+                offset = this.computeOffset(ev);
 
-        this.renderFacade(sliderData.facadeEl, 1);
-        this.renderFiller(sliderData.fillerEl, offset, '.4s transform ease-out');
-        this.renderHandle(sliderData.handleEl, offset);
-        this.renderStatTitle(sliderData.statTitleEl, 1, '30%');
-        this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 0, '100%');
-        // updates sliderData instance offset value
-        sliderData.updateLastValue(offset);
+            this.renderFacade(sliderData.facadeEl, 1);
+            this.renderFiller(sliderData.fillerEl, offset, '.4s transform ease-out');
+            this.renderHandle(sliderData.handleEl, offset);
+            this.renderStatTitle(sliderData.statTitleEl, 1, '30%');
+            this.renderStatValue(sliderData.statContainerEl, sliderData.statValueEl, 0, '100%');
+            // updates sliderData instance offset value
+            sliderData.updateLastValue(offset);
+        }
     }
 
 
@@ -156,9 +162,6 @@ class AmbientSliders {
             deltaRange = this.maxRange - this.minRange,
             offsetPercentage = (offset - this.minRange) / deltaRange,
             unitPercentage = offsetPercentage * deltaUnitRange;
-
-
-
         return `${unitPercentage.toFixed(sliderData.dec)}`;
     }
 
