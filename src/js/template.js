@@ -1,5 +1,5 @@
 
-export default class Template {
+export class Template {
 
     constructor (id, title, sliderPos, sliderUnit) {
 

@@ -1,4 +1,4 @@
-export default class SliderData {
+export class SliderData {
 
     constructor (id, title, range, unit, dec, cached = false) {
 

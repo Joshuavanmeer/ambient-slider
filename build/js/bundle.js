@@ -86,13 +86,7 @@
 
 	var _template = __webpack_require__(2);
 
-	var _template2 = _interopRequireDefault(_template);
-
 	var _sliderdata = __webpack_require__(3);
-
-	var _sliderdata2 = _interopRequireDefault(_sliderdata);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -145,9 +139,9 @@
 
 	            var sliders = this.config.sliders;
 	            sliders.forEach(function (slider) {
-	                var template = new _template2.default(++_this.uId, slider.title, slider.unitPos, slider.unit);
+	                var template = new _template.Template(++_this.uId, slider.title, slider.unitPos, slider.unit);
 	                _this.tmpl += template.html;
-	                var sliderData = new _sliderdata2.default(_this.uId, slider.title, slider.range, slider.unit, slider.dec);
+	                var sliderData = new _sliderdata.SliderData(_this.uId, slider.title, slider.range, slider.unit, slider.dec);
 	                _this.sliders.push(sliderData);
 	            });
 	        }
@@ -383,7 +377,7 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var Template = function Template(id, title, sliderPos, sliderUnit) {
+	var Template = exports.Template = function Template(id, title, sliderPos, sliderUnit) {
 	    _classCallCheck(this, Template);
 
 	    this.unitBefore = '';
@@ -397,8 +391,6 @@
 
 	    this.html = ('<li id="slider-list-' + id + '">                \n                    <div class="slider-container">\n                        <div class="stats-container">\n                            <div class="title-container">\n                                <h3>' + title + '</h3>\n                                <p>' + this.unitBefore + '<span class="stat-value">30</span>' + this.unitAfter + '</p>\n                            </div>\n                            <div class="toggle-container"></div>                            \n                        </div>\n                        <div data-id="' + id + '" class="facade">\n                            <div class="filler">\n                                <div class="handle"></div>\n                            </div>\n                        </div>\n                    </div>               \n            </li>').trim();
 	};
-
-	exports.default = Template;
 
 /***/ },
 /* 3 */
@@ -414,7 +406,7 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var SliderData = function () {
+	var SliderData = exports.SliderData = function () {
 	    function SliderData(id, title, range, unit, dec) {
 	        var cached = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
 
@@ -463,8 +455,6 @@
 
 	    return SliderData;
 	}();
-
-	exports.default = SliderData;
 
 /***/ }
 /******/ ]);

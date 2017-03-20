@@ -1,5 +1,5 @@
-import { default as Template }      from './template';
-import { default as SliderData }    from './sliderdata.js';
+import { Template }      from './template';
+import { SliderData }    from './sliderdata.js';
 
 
 
